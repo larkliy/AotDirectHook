@@ -1,0 +1,93 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    NativeAOT shared library (injectable DLL) skeleton.
+
+    All size/trimming knobs below are the MSBuild properties consumed by
+    src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.targets
+    and by Microsoft.NET.ILLink.targets (feature-switch defaults).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+
+    <!-- NativeAOT shared library. OutputType=Library + NativeLib=Shared also
+         pulls in bootstrapperdll + the no-op dllmain.cpp (loader-lock safe). -->
+    <PublishAot>true</PublishAot>
+    <NativeLib>Shared</NativeLib>
+    <IlcExportUnmanagedEntrypoints>true</IlcExportUnmanagedEntrypoints>
+  </PropertyGroup>
+
+  <!-- Maximum code-size optimization (Native.targets:252,267,297,114,41) -->
+  <PropertyGroup>
+    <Optimize>true</Optimize>                                         <!-- emits -O               (268) -->
+    <OptimizationPreference>Size</OptimizationPreference>             <!-- emits Os                (297) -->
+    <IlcDehydrate>true</IlcDehydrate>                                 <!-- emits dehydrate         (267) -->
+    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies> <!-- bodyfolding=all         (252) -->
+    <StackTraceSupport>false</StackTraceSupport>                      <!-- drops StackTraceMetadata (114) -->
+    <UseSizeOptimizedLinq>true</UseSizeOptimizedLinq>                 <!-- (41) -->
+  </PropertyGroup>
+
+  <!-- Maximum metadata trimming (Native.targets:292,315,295,305) -->
+  <PropertyGroup>
+    <IlcTrimMetadata>true</IlcTrimMetadata>                           <!-- default; false => reflectiondata=all -->
+    <IlcGenerateCompleteTypeMetadata>false</IlcGenerateCompleteTypeMetadata>
+    <IlcScanReflection>false</IlcScanReflection>                      <!-- disables scanreflection (295) -->
+    <IlcGenerateWin32Resources>false</IlcGenerateWin32Resources>      <!-- no VERSIONINFO res      (305) -->
+  </PropertyGroup>
+
+  <!-- No symbols / no extra output (Native.targets:25,269,434) -->
+  <PropertyGroup>
+    <DebugType>none</DebugType>                                       <!-- => NativeDebugSymbols=false -->
+    <StripSymbols>true</StripSymbols>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+  </PropertyGroup>
+
+  <!--
+    Feature switches. These are the MSBuild properties that
+    Microsoft.NET.ILLink.targets (line 38-67) defaults and that
+    Microsoft.NET.Sdk.targets turns into RuntimeHostConfigurationOption items
+    with Trim=true, which the Native targets emit as ILC "feature:Name=Value"
+    args (Native.targets:288). Setting them here wins over the ILLink defaults.
+  -->
+  <PropertyGroup>
+    <DebuggerSupport>false</DebuggerSupport>                          <!-- also drops DotNetRuntimeDebugHeader export -->
+    <EventSourceSupport>false</EventSourceSupport>
+    <DynamicCodeSupport>false</DynamicCodeSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+    <StartupHookSupport>false</StartupHookSupport>
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <Http3Support>false</Http3Support>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantTimezone>true</InvariantTimezone>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+    <MetricsSupport>false</MetricsSupport>
+    <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- No MSBuild property maps to this one. -->
+    <RuntimeHostConfigurationOption Include="System.Linq.Expressions.CanCompileToIL" Value="false" Trim="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
+  </ItemGroup>
+
+</Project>
